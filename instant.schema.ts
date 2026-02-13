@@ -4,6 +4,7 @@ const schema = i.schema({
   entities: {
     cards: i.entity({
       ownerId: i.string().indexed(),
+      deckName: i.string().optional(),
       title: i.string(),
       frontText: i.string(),
       backText: i.string(),

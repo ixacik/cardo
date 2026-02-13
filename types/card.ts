@@ -1,5 +1,6 @@
 export type Card = {
   id: string;
+  deckName?: string;
   title: string;
   frontText: string;
   backText: string;
@@ -19,6 +20,7 @@ export type Card = {
 };
 
 export type CardInput = {
+  deckName?: string;
   title: string;
   frontText: string;
   backText: string;

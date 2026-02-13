@@ -35,7 +35,7 @@ export function CardGridItem({ card, onPress }: CardGridItemProps) {
       })}
       onPress={() => onPress(card.id)}
     >
-      <View className="min-h-[210px] rounded-[14px] border border-border-light bg-surface-light p-3 dark:border-border-dark dark:bg-surface-dark">
+      <View className="min-h-[210px] rounded-[14px] bg-surface-light p-3 dark:bg-surface-dark">
         <View className="mb-2 gap-1.5">
           <ThemedText type="defaultSemiBold" numberOfLines={1} className="mb-0.5">
             {card.title || 'Untitled card'}

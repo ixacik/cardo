@@ -21,6 +21,7 @@ type CardContextValue = {
 
 type RawCard = {
   id: string;
+  deckName?: unknown;
   title?: unknown;
   frontText?: unknown;
   backText?: unknown;
@@ -49,6 +50,9 @@ const parseImageUris = (value: unknown): string[] => {
   return value.filter((item): item is string => typeof item === 'string');
 };
 
+const toOptionalString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+
 const toNumber = (value: unknown, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
@@ -65,6 +69,7 @@ const toCard = (row: RawCard): Card => {
 
   return {
     id: row.id,
+    deckName: toOptionalString(row.deckName),
     title: typeof row.title === 'string' ? row.title : '',
     frontText: typeof row.frontText === 'string' ? row.frontText : '',
     backText: typeof row.backText === 'string' ? row.backText : '',
@@ -131,6 +136,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
       const ownerId = requireUserId();
       const now = Date.now();
       const nextId = id();
+      const deckName = input.deckName?.trim();
       const title = input.title.trim();
       const frontText = input.frontText.trim();
       const backText = input.backText.trim();
@@ -138,6 +144,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
       const reviewMeta = createInitialReviewMeta(now);
       const nextCard: Card = {
         id: nextId,
+        deckName: deckName && deckName.length > 0 ? deckName : undefined,
         title,
         frontText,
         backText,
@@ -152,6 +159,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
           db.tx.cards[nextId].update(
             compactObject({
               ownerId,
+              deckName: deckName && deckName.length > 0 ? deckName : undefined,
               title,
               frontText,
               backText,
@@ -177,6 +185,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
     async (card: Card): Promise<void> => {
       const ownerId = requireUserId();
       const now = Date.now();
+      const deckName = card.deckName?.trim();
       const imageUris = (card.imageUris ?? []).map((uri) => uri.trim()).filter(Boolean);
 
       try {
@@ -184,6 +193,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
           db.tx.cards[card.id].update(
             compactObject({
               ownerId,
+              deckName: deckName && deckName.length > 0 ? deckName : undefined,
               title: card.title.trim(),
               frontText: card.frontText.trim(),
               backText: card.backText.trim(),
