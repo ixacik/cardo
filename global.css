@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+@theme {
+  --color-app-light: #f2f2f7;
+  --color-app-dark: #000000;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #1c1c1e;
+  --color-panel-light: #ffffff;
+  --color-panel-dark: #111111;
+
+  --color-fg-light: #11181c;
+  --color-fg-dark: #eceef0;
+  --color-muted-light: #687076;
+  --color-muted-dark: #9ba1a6;
+  --color-subtle-light: #8a9098;
+  --color-subtle-dark: #9aa5ad;
+
+  --color-border-light: #e5e5ea;
+  --color-border-dark: #2f2f33;
+  --color-input-light: #ffffff;
+  --color-input-dark: #1a1f24;
+  --color-input-border-light: #8e8e93;
+  --color-input-border-dark: #5b6370;
+
+  --color-primary: #0a84ff;
+  --color-primary-pressed: #0070d6;
+  --color-link: #0a7ea4;
+
+  --color-danger: #d32f2f;
+  --color-danger-strong: #c62828;
+  --color-warning: #ef6c00;
+  --color-success: #2e7d32;
+  --color-info: #1565c0;
+
+  --radius-control: 0.625rem;
+  --radius-input: 0.5rem;
+}
