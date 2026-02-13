@@ -26,6 +26,10 @@ export default function TabLayout() {
         <Icon sf="house.fill" />
         <Label>Cards</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(explore)">
+        <Icon sf="safari.fill" />
+        <Label>Explore</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(settings)">
         <Icon sf="gear" />
         <Label>Settings</Label>

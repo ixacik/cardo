@@ -48,12 +48,12 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-app-light dark:bg-app-dark">
+    <>
       <FlatList
         data={cards}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        className="flex-1"
+        className="flex-1 bg-app-light dark:bg-app-dark"
         columnWrapperClassName="mb-2.5 gap-2.5"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="px-4 pt-3"
@@ -109,6 +109,6 @@ export default function HomeScreen() {
       >
         <Ionicons name="add" size={30} color={onPrimaryColor} />
       </Pressable>
-    </View>
+    </>
   );
 }
