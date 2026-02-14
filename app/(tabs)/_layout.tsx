@@ -1,12 +1,17 @@
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
+import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
 import { Redirect } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 
 import { db } from '@/services/instant';
 
 export default function TabLayout() {
   const { isLoading, user } = db.useAuth();
+  const iosVersion =
+    typeof Platform.Version === 'string'
+      ? Number.parseInt(Platform.Version, 10)
+      : Platform.Version;
+  const isMinimizeBehaviorSupported = Platform.OS === 'ios' && iosVersion >= 26;
 
   if (isLoading) {
     return (
@@ -21,7 +26,10 @@ export default function TabLayout() {
   }
 
   return (
-    <NativeTabs>
+    <NativeTabs
+      blurEffect="systemChromeMaterial"
+      minimizeBehavior={isMinimizeBehaviorSupported ? 'onScrollDown' : undefined}
+    >
       <NativeTabs.Trigger name="(cards)">
         <Icon sf="house.fill" />
         <Label>Cards</Label>
