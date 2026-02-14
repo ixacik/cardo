@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { SocialStatRow } from '@/components/explore/social-stat-row';
 import { ThemedText } from '@/components/themed-text';
+import { Card, Label } from '@/components/ui';
 import type { DeckSummary } from '@/types/explore';
 
 type DeckRailCardProps = {
@@ -20,14 +21,15 @@ export function DeckRailCard({ deck, onPress }: DeckRailCardProps) {
         transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
     >
-      <View className="overflow-hidden rounded-3xl border border-border-light bg-surface-light dark:border-border-dark dark:bg-surface-dark">
+      <Card
+        className="overflow-hidden rounded-3xl"
+        padding="none"
+      >
         <View className="px-4 pb-4 pt-4" style={{ backgroundColor: `${badgeColor}22` }}>
           <View className="mb-3 flex-row items-center justify-between">
-            <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: `${badgeColor}30` }}>
-              <ThemedText className="text-xs font-semibold" style={{ color: badgeColor }}>
-                {deck.category?.label ?? 'General'}
-              </ThemedText>
-            </View>
+            <Label variant="badge" accentColor={badgeColor}>
+              {deck.category?.label ?? 'General'}
+            </Label>
             <ThemedText className="text-xs opacity-75">{deck.cardCount} cards</ThemedText>
           </View>
 
@@ -50,7 +52,7 @@ export function DeckRailCard({ deck, onPress }: DeckRailCardProps) {
             ratingCount={deck.ratingCount}
           />
         </View>
-      </View>
+      </Card>
     </Pressable>
   );
 }

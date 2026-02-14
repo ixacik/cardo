@@ -1,7 +1,6 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { cn } from '@/lib/cn';
+import { Button } from '@/components/ui';
 import type { ReviewRating } from '@/types/card';
 
 type ReviewGradeBarProps = {
@@ -26,20 +25,14 @@ export function ReviewGradeBar({ onGrade, disabled = false }: ReviewGradeBarProp
   return (
     <View className="mt-[18px] flex-row flex-wrap gap-2.5">
       {gradeButtons.map((button) => (
-        <Pressable
+        <Button
           key={button.rating}
-          accessibilityRole="button"
           disabled={disabled}
           onPress={() => onGrade(button.rating)}
-          className={cn(
-            'min-w-[120px] flex-1 items-center rounded-control px-2.5 py-3',
-            button.className,
-            disabled && 'opacity-60'
-          )}
-          style={({ pressed }) => ({ opacity: disabled ? 0.6 : pressed ? 0.92 : 1 })}
+          className={`min-w-[120px] flex-1 px-2.5 ${button.className}`}
         >
-          <ThemedText className="font-semibold text-white">{button.label}</ThemedText>
-        </Pressable>
+          {button.label}
+        </Button>
       ))}
     </View>
   );

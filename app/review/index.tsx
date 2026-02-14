@@ -1,13 +1,13 @@
 import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ReviewFlipCard } from '@/components/review/review-flip-card';
 import { ReviewGradeBar } from '@/components/review/review-grade-bar';
-import { cn } from '@/lib/cn';
+import { Button } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
 import { buildReviewQueue } from '@/services/review/fsrs';
@@ -109,21 +109,13 @@ export default function ReviewScreen() {
             : 'No cards are due right now.'}
         </ThemedText>
 
-        <Pressable
-          className="items-center rounded-control bg-primary px-4 py-3"
-          onPress={() => router.replace('/')}
-          style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
-        >
-          <ThemedText className="font-bold text-white">Back to cards</ThemedText>
-        </Pressable>
+        <Button onPress={() => router.replace('/')} textClassName="font-bold">
+          Back to cards
+        </Button>
 
-        <Pressable
-          className="mt-3 items-center rounded-control border border-border-light bg-surface-light px-4 py-3 dark:border-border-dark dark:bg-surface-dark"
-          onPress={startNewSession}
-          style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
-        >
-          <ThemedText className="font-semibold text-link">Start another session</ThemedText>
-        </Pressable>
+        <Button variant="secondary" className="mt-3" textClassName="text-link" onPress={startNewSession}>
+          Start another session
+        </Button>
       </ThemedView>
     );
   }
@@ -166,17 +158,15 @@ export default function ReviewScreen() {
 
         {error ? <ThemedText className="mt-2.5 text-danger">{error}</ThemedText> : null}
 
-        <Pressable
-          className={cn(
-            'mt-3 items-center rounded-control border border-border-light bg-surface-light px-4 py-3 dark:border-border-dark dark:bg-surface-dark',
-            submitting && 'opacity-60'
-          )}
+        <Button
+          variant="secondary"
+          className="mt-3"
+          textClassName="text-link"
+          loading={submitting}
           onPress={() => router.replace('/')}
-          disabled={submitting}
-          style={({ pressed }) => ({ opacity: submitting ? 0.6 : pressed ? 0.92 : 1 })}
         >
-          <ThemedText className="font-semibold text-link">Exit review</ThemedText>
-        </Pressable>
+          Exit review
+        </Button>
       </ScrollView>
     </ThemedView>
   );

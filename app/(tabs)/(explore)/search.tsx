@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DeckListItem } from '@/components/explore/deck-list-item';
 import { ThemedText } from '@/components/themed-text';
+import { Card, Label, TextField } from '@/components/ui';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useExploreSearch } from '@/hooks/useExploreSearch';
 
@@ -48,14 +49,13 @@ export default function ExploreSearchScreen() {
         contentContainerClassName="gap-4 px-5 pb-10 pt-4"
         keyboardShouldPersistTaps="handled"
       >
-        <View className="flex-row items-center gap-2 rounded-[14px] border border-input-border-light bg-input-light px-3 py-2.5 dark:border-input-border-dark dark:bg-input-dark">
+        <Card className="flex-row items-center gap-2 px-3 py-2.5" padding="none">
           <Ionicons name="search" size={18} color={isDark ? '#9ba1a6' : '#687076'} />
-          <TextInput
+          <TextField
             value={searchText}
             onChangeText={setSearchText}
             placeholder="Search decks or categories"
-            placeholderTextColor={isDark ? '#9aa5ad' : '#8a9098'}
-            className="flex-1 text-base text-fg-light dark:text-fg-dark"
+            className="flex-1 bg-transparent px-0 py-0 text-base"
             autoFocus
             returnKeyType="search"
             autoCorrect={false}
@@ -66,12 +66,12 @@ export default function ExploreSearchScreen() {
               <Ionicons name="close-circle" size={19} color={isDark ? '#9ba1a6' : '#687076'} />
             </Pressable>
           ) : null}
-        </View>
+        </Card>
 
         {!minCharsMet ? (
-          <View className="rounded-2xl border border-border-light bg-surface-light p-4 dark:border-border-dark dark:bg-surface-dark">
+          <Card className="rounded-2xl">
             <ThemedText className="opacity-75">Type at least 2 characters to search decks.</ThemedText>
-          </View>
+          </Card>
         ) : null}
 
         {minCharsMet && categoryResults.length ? (
@@ -79,35 +79,29 @@ export default function ExploreSearchScreen() {
             <ThemedText type="defaultSemiBold">Categories</ThemedText>
             <View className="flex-row flex-wrap gap-2">
               {categoryResults.map((category) => (
-                <Pressable
+                <Label
                   key={category.id}
                   onPress={() => setSearchText(category.label)}
-                  className="rounded-full px-3.5 py-1.5"
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.86 : 1,
-                    backgroundColor: `${category.accentColor}20`,
-                  })}
+                  accentColor={category.accentColor}
                 >
-                  <ThemedText className="text-xs font-semibold" style={{ color: category.accentColor }}>
-                    {category.label}
-                  </ThemedText>
-                </Pressable>
+                  {category.label}
+                </Label>
               ))}
             </View>
           </View>
         ) : null}
 
         {loading ? (
-          <View className="items-center gap-2 rounded-2xl border border-border-light bg-surface-light p-5 dark:border-border-dark dark:bg-surface-dark">
+          <Card className="items-center gap-2 rounded-2xl p-5">
             <ActivityIndicator color="#0a84ff" />
             <ThemedText className="opacity-75">Searching for {query}...</ThemedText>
-          </View>
+          </Card>
         ) : null}
 
         {error ? (
-          <View className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
+          <Card className="rounded-2xl bg-danger/10">
             <ThemedText className="text-danger">{error}</ThemedText>
-          </View>
+          </Card>
         ) : null}
 
         {minCharsMet && deckResults.length ? (
@@ -120,12 +114,12 @@ export default function ExploreSearchScreen() {
         ) : null}
 
         {showNoResults ? (
-          <View className="rounded-2xl border border-border-light bg-surface-light p-4 dark:border-border-dark dark:bg-surface-dark">
+          <Card className="rounded-2xl">
             <ThemedText type="defaultSemiBold">No results</ThemedText>
             <ThemedText className="mt-1 opacity-75">
               No decks or categories matched {query}.
             </ThemedText>
-          </View>
+          </Card>
         ) : null}
       </ScrollView>
     </View>

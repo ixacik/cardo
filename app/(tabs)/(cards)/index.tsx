@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 
 import { CardGridItem } from '@/components/cards/card-grid-item';
 import { DeckGridItem } from '@/components/cards/deck-grid-item';
 import { ThemedText } from '@/components/themed-text';
+import { Button, Card } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import type { Card } from '@/types/card';
+import type { Card as CardRecord } from '@/types/card';
 
 type DeckSummary = {
   dueCards: number;
@@ -30,17 +31,15 @@ export default function HomeScreen() {
   const { cards, loading, error, refreshCards } = useCards();
   const insets = useSafeAreaInsets();
   const isDark = useColorScheme() === 'dark';
-  const [mutedLight, mutedDark, onPrimary] = useCSSVariable([
+  const [mutedLight, mutedDark] = useCSSVariable([
     '--color-muted-light',
     '--color-muted-dark',
-    '--color-surface-light',
   ]);
 
   const toColorValue = (value: string | number | undefined, fallback: string) =>
     typeof value === 'string' ? value : fallback;
 
   const mutedIconColor = toColorValue(isDark ? mutedDark : mutedLight, isDark ? '#9ba1a6' : '#687076');
-  const onPrimaryColor = toColorValue(onPrimary, '#ffffff');
 
   useEffect(() => {
     refreshCards();
@@ -81,7 +80,7 @@ export default function HomeScreen() {
   }, [cards]);
 
   const deckRows = useMemo(() => chunkIntoRows(deckSummaries, 2), [deckSummaries]);
-  const otherCards = useMemo<Card[]>(
+  const otherCards = useMemo<CardRecord[]>(
     () => cards.filter((card) => !(card.deckName?.trim().length)),
     [cards]
   );
@@ -95,121 +94,99 @@ export default function HomeScreen() {
     router.push('/review');
   };
 
-  const onCreateCard = () => {
-    router.push('/card/create' as never);
-  };
-
   return (
-    <>
-      <ScrollView
-        className="flex-1 bg-app-light dark:bg-app-dark"
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerClassName="gap-3 px-4 pt-3"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="rounded-[14px] bg-surface-light p-4 dark:bg-surface-dark">
-          <ThemedText type="defaultSemiBold" className="opacity-70">
-            Review Queue
-          </ThemedText>
-          <ThemedText type="title" className="mb-0.5 mt-1.5">
-            {dueCount}
-          </ThemedText>
-          <ThemedText className="mb-3 opacity-75">
-            {dueCount === 1 ? '1 card is due now' : `${dueCount} cards are due now`}
-          </ThemedText>
+    <ScrollView
+      className="flex-1 bg-app-light dark:bg-app-dark"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerClassName="gap-3 px-4 pt-3"
+      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <Card>
+        <ThemedText type="defaultSemiBold" className="opacity-70">
+          Review Queue
+        </ThemedText>
+        <ThemedText type="title" className="mb-0.5 mt-1.5">
+          {dueCount}
+        </ThemedText>
+        <ThemedText className="mb-3 opacity-75">
+          {dueCount === 1 ? '1 card is due now' : `${dueCount} cards are due now`}
+        </ThemedText>
 
-          <Pressable
-            className="items-center rounded-control bg-primary px-4 py-3"
-            onPress={onOpenReview}
-            style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
-          >
-            <ThemedText className="font-bold text-white">Start Review</ThemedText>
-          </Pressable>
+        <Button onPress={onOpenReview} textClassName="font-bold">
+          Start Review
+        </Button>
 
-          {loading ? <ThemedText className="mt-2.5 opacity-70">Loading cards...</ThemedText> : null}
-          {error ? <ThemedText className="mt-2.5 text-danger">{error}</ThemedText> : null}
-        </View>
+        {loading ? <ThemedText className="mt-2.5 opacity-70">Loading cards...</ThemedText> : null}
+        {error ? <ThemedText className="mt-2.5 text-danger">{error}</ThemedText> : null}
+      </Card>
 
-        <View className="gap-2.5">
-          <ThemedText type="defaultSemiBold" className="text-muted-light dark:text-muted-dark">
-            Decks
-          </ThemedText>
+      <View className="gap-2.5">
+        <ThemedText type="defaultSemiBold" className="text-muted-light dark:text-muted-dark">
+          Decks
+        </ThemedText>
 
-          {deckRows.length > 0 ? (
-            <View className="gap-2.5">
-              {deckRows.map((row, rowIndex) => (
-                <View key={`deck-row-${rowIndex}`} className="flex-row gap-2.5">
-                  {row.map((deck) => (
-                    <DeckGridItem
-                      key={deck.name}
-                      name={deck.name}
-                      totalCards={deck.totalCards}
-                      dueCards={deck.dueCards}
-                    />
-                  ))}
-                  {row.length === 1 ? <View className="flex-1" /> : null}
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View className="rounded-[14px] bg-surface-light p-4 dark:bg-surface-dark">
+        {deckRows.length > 0 ? (
+          <View className="gap-2.5">
+            {deckRows.map((row, rowIndex) => (
+              <View key={`deck-row-${rowIndex}`} className="flex-row gap-2.5">
+                {row.map((deck) => (
+                  <DeckGridItem
+                    key={deck.name}
+                    name={deck.name}
+                    totalCards={deck.totalCards}
+                    dueCards={deck.dueCards}
+                  />
+                ))}
+                {row.length === 1 ? <View className="flex-1" /> : null}
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Card>
+            <ThemedText className="text-muted-light dark:text-muted-dark">
+              No decks assigned yet.
+            </ThemedText>
+          </Card>
+        )}
+      </View>
+
+      <View className="gap-2.5">
+        <ThemedText type="defaultSemiBold" className="text-muted-light dark:text-muted-dark">
+          Cards
+        </ThemedText>
+
+        {otherCardRows.length > 0 ? (
+          <View className="gap-2.5">
+            {otherCardRows.map((row, rowIndex) => (
+              <View key={`card-row-${rowIndex}`} className="flex-row gap-2.5">
+                {row.map((card) => (
+                  <CardGridItem key={card.id} card={card} onPress={onOpenCard} />
+                ))}
+                {row.length === 1 ? <View className="flex-1" /> : null}
+              </View>
+            ))}
+          </View>
+        ) : !loading ? (
+          cards.length > 0 ? (
+            <Card>
               <ThemedText className="text-muted-light dark:text-muted-dark">
-                No decks assigned yet.
+                No unassigned cards.
               </ThemedText>
-            </View>
-          )}
-        </View>
-
-        <View className="gap-2.5">
-          <ThemedText type="defaultSemiBold" className="text-muted-light dark:text-muted-dark">
-            Cards
-          </ThemedText>
-
-          {otherCardRows.length > 0 ? (
-            <View className="gap-2.5">
-              {otherCardRows.map((row, rowIndex) => (
-                <View key={`card-row-${rowIndex}`} className="flex-row gap-2.5">
-                  {row.map((card) => (
-                    <CardGridItem key={card.id} card={card} onPress={onOpenCard} />
-                  ))}
-                  {row.length === 1 ? <View className="flex-1" /> : null}
-                </View>
-              ))}
-            </View>
-          ) : !loading ? (
-            cards.length > 0 ? (
-              <View className="rounded-[14px] bg-surface-light p-4 dark:bg-surface-dark">
-                <ThemedText className="text-muted-light dark:text-muted-dark">
-                  No unassigned cards.
-                </ThemedText>
-              </View>
-            ) : (
-              <View className="items-center gap-2 rounded-[14px] bg-surface-light p-6 dark:bg-surface-dark">
-                <Ionicons name="albums-outline" size={24} color={mutedIconColor} />
-                <ThemedText type="defaultSemiBold" className="mt-1.5">
-                  No cards yet
-                </ThemedText>
-                <ThemedText className="opacity-70">Tap + to create your first card.</ThemedText>
-              </View>
-            )
-          ) : null}
-        </View>
-      </ScrollView>
-
-      <Pressable
-        accessibilityLabel="Create new card"
-        accessibilityHint="Opens the new card modal"
-        accessibilityRole="button"
-        onPress={onCreateCard}
-        className="absolute right-[18px] size-[58px] items-center justify-center rounded-full bg-primary shadow-xl shadow-black/25"
-        style={({ pressed }) => ({
-          bottom: insets.bottom + 72,
-          transform: [{ scale: pressed ? 0.96 : 1 }],
-        })}
-      >
-        <Ionicons name="add" size={30} color={onPrimaryColor} />
-      </Pressable>
-    </>
+            </Card>
+          ) : (
+            <Card className="items-center gap-2" padding="lg">
+              <Ionicons name="albums-outline" size={24} color={mutedIconColor} />
+              <ThemedText type="defaultSemiBold" className="mt-1.5">
+                No cards yet
+              </ThemedText>
+              <ThemedText className="opacity-70">
+                Tap + in the top-right to create your first card.
+              </ThemedText>
+            </Card>
+          )
+        ) : null}
+      </View>
+    </ScrollView>
   );
 }

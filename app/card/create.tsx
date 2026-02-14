@@ -1,12 +1,12 @@
 import { Redirect, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardEditorFields, type CardEditorValue } from '@/components/cards/card-editor-fields';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { cn } from '@/lib/cn';
+import { Button } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
 
@@ -130,26 +130,19 @@ export default function CreateIndexCardScreen() {
             }}
           />
 
-          <Pressable
-            className={cn('mt-4 items-center rounded-control bg-primary px-4 py-3', submitting && 'opacity-60')}
-            onPress={onSubmit}
-            disabled={submitting}
-            style={({ pressed }) => ({ opacity: submitting ? 0.6 : pressed ? 0.92 : 1 })}
-          >
-            <ThemedText className="font-semibold text-white">{submitting ? 'Saving...' : 'Save card'}</ThemedText>
-          </Pressable>
+          <Button className="mt-4" loading={submitting} onPress={onSubmit}>
+            Save card
+          </Button>
 
-          <Pressable
-            className={cn(
-              'mt-2 items-center rounded-control border border-border-light bg-surface-light px-4 py-3 dark:border-border-dark dark:bg-surface-dark',
-              submitting && 'opacity-60'
-            )}
+          <Button
+            variant="secondary"
+            className="mt-2"
+            textClassName="text-link"
+            loading={submitting}
             onPress={onClose}
-            disabled={submitting}
-            style={({ pressed }) => ({ opacity: submitting ? 0.6 : pressed ? 0.92 : 1 })}
           >
-            <ThemedText className="font-semibold text-link">Cancel</ThemedText>
-          </Pressable>
+            Cancel
+          </Button>
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>

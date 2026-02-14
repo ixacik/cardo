@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardEditorFields, type CardEditorValue } from '@/components/cards/card-editor-fields';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { cn } from '@/lib/cn';
+import { Button, Card } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
 
@@ -83,13 +83,9 @@ export default function CardDetailsScreen() {
         <ThemedText className="mb-5 mt-3">
           This card may have been deleted or is no longer available.
         </ThemedText>
-        <Pressable
-          className="items-center rounded-control bg-primary px-4 py-3"
-          onPress={() => router.replace('/')}
-          style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
-        >
-          <ThemedText className="font-semibold text-white">Back to cards</ThemedText>
-        </Pressable>
+        <Button className="mt-6" onPress={() => router.replace('/')}>
+          Back to cards
+        </Button>
       </ThemedView>
     );
   }
@@ -200,7 +196,7 @@ export default function CardDetailsScreen() {
             </ThemedText>
             {!isEditing ? (
               <Pressable
-                className="rounded-full border border-input-border-light px-3 py-2 dark:border-input-border-dark"
+                className="rounded-full bg-surface-light px-3 py-2 dark:bg-surface-dark"
                 onPress={onStartEdit}
                 style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
               >
@@ -221,7 +217,7 @@ export default function CardDetailsScreen() {
               }}
             />
           ) : (
-            <View className="mt-2 gap-2 rounded-xl border border-border-light p-3.5 dark:border-border-dark">
+            <Card className="mt-2 gap-2 rounded-xl p-3.5" padding="none">
               <ThemedText type="subtitle" className="mt-1.5">
                 Front
               </ThemedText>
@@ -248,47 +244,37 @@ export default function CardDetailsScreen() {
               <ThemedText type="defaultSemiBold" className="mt-3">
                 Due: {formatDueLabel(card.dueAt)}
               </ThemedText>
-            </View>
+            </Card>
           )}
 
           {error ? <ThemedText className="mt-2 text-danger">{error}</ThemedText> : null}
 
           {isEditing ? (
             <>
-              <Pressable
-                className={cn('mt-4 items-center rounded-control bg-primary px-4 py-3', (saving || deleting) && 'opacity-60')}
-                onPress={onSave}
-                disabled={saving || deleting}
-                style={({ pressed }) => ({
-                  opacity: saving || deleting ? 0.6 : pressed ? 0.92 : 1,
-                })}
-              >
-                <ThemedText className="font-semibold text-white">{saving ? 'Saving...' : 'Save changes'}</ThemedText>
-              </Pressable>
-              <Pressable
-                className={cn(
-                  'mt-2 items-center rounded-control border border-input-border-light px-4 py-3 dark:border-input-border-dark',
-                  (saving || deleting) && 'opacity-60'
-                )}
+              <Button className="mt-4" loading={saving || deleting} onPress={onSave}>
+                Save changes
+              </Button>
+              <Button
+                variant="secondary"
+                className="mt-2 bg-transparent dark:bg-transparent"
+                textClassName="text-link"
+                loading={saving || deleting}
                 onPress={onCancelEdit}
-                disabled={saving || deleting}
-                style={({ pressed }) => ({
-                  opacity: saving || deleting ? 0.6 : pressed ? 0.92 : 1,
-                })}
               >
-                <ThemedText className="font-semibold text-link">Cancel</ThemedText>
-              </Pressable>
+                Cancel
+              </Button>
             </>
           ) : null}
 
-          <Pressable
-            className={cn('mt-[18px] items-center rounded-control bg-danger-strong px-4 py-3', (saving || deleting) && 'opacity-60')}
+          <Button
+            variant="destructive"
+            className="mt-[18px]"
+            textClassName="font-bold"
+            loading={saving || deleting}
             onPress={onDelete}
-            disabled={saving || deleting}
-            style={({ pressed }) => ({ opacity: saving || deleting ? 0.6 : pressed ? 0.92 : 1 })}
           >
-            <ThemedText className="font-bold text-white">{deleting ? 'Deleting...' : 'Delete card'}</ThemedText>
-          </Pressable>
+            Delete card
+          </Button>
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>

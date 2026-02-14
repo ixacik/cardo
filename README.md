@@ -4,7 +4,8 @@ This app uses InstantDB as the backend for:
 
 - Email magic-code authentication
 - Per-user cards
-- Per-user settings (`profileName`)
+- Per-user profile/settings (`profileName`, avatar path)
+- Per-user review analytics events (streaks and profile charts)
 
 ## Requirements
 

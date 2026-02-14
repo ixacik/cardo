@@ -1,11 +1,11 @@
 import { Redirect } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { cn } from '@/lib/cn';
+import { Button, TextField } from '@/components/ui';
 import { db } from '@/services/instant';
 
 type Step = 'email' | 'code';
@@ -114,21 +114,20 @@ export default function SignInScreen() {
         <ScrollView contentContainerClassName="gap-2.5" keyboardShouldPersistTaps="handled">
           <ThemedText type="title">Sign in</ThemedText>
           <ThemedText className="mb-2">
-            Use your email and a one-time code to access cards and settings.
+            Use your email and a one-time code to access cards, profile, and settings.
           </ThemedText>
 
           <ThemedText type="subtitle" className="mt-1.5">
             Email
           </ThemedText>
-          <TextInput
+          <TextField
             autoCapitalize="none"
             autoCorrect={false}
             editable={!submitting}
             keyboardType="email-address"
             onChangeText={setEmail}
             placeholder="you@example.com"
-            placeholderTextColorClassName="text-subtle-light dark:text-subtle-dark"
-            className="mt-1.5 rounded-input border border-input-border-light bg-input-light px-3 py-3 text-fg-light dark:border-input-border-dark dark:bg-input-dark dark:text-fg-dark"
+            className="mt-1.5"
             value={email}
           />
 
@@ -137,42 +136,36 @@ export default function SignInScreen() {
               <ThemedText type="subtitle" className="mt-1.5">
                 Magic code
               </ThemedText>
-              <TextInput
+              <TextField
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!submitting}
                 keyboardType="number-pad"
                 onChangeText={setCode}
                 placeholder="123456"
-                placeholderTextColorClassName="text-subtle-light dark:text-subtle-dark"
-                className="mt-1.5 rounded-input border border-input-border-light bg-input-light px-3 py-3 text-fg-light dark:border-input-border-dark dark:bg-input-dark dark:text-fg-dark"
+                className="mt-1.5"
                 textContentType="oneTimeCode"
                 value={code}
               />
             </>
           ) : null}
 
-          <Pressable
-            disabled={submitting}
+          <Button
+            loading={submitting}
             onPress={step === 'email' ? sendMagicCode : verifyCode}
-            className={cn(
-              'mt-3.5 items-center rounded-control bg-primary px-4 py-3',
-              submitting && 'opacity-60'
-            )}
-            style={({ pressed }) => ({ opacity: submitting ? 0.6 : pressed ? 0.92 : 1 })}
+            className="mt-3.5"
           >
-            <ThemedText className="font-semibold text-white">
-              {submitting ? 'Please wait...' : step === 'email' ? 'Send code' : 'Verify and sign in'}
-            </ThemedText>
-          </Pressable>
+            {step === 'email' ? 'Send code' : 'Verify and sign in'}
+          </Button>
 
           {step === 'code' ? (
             <View className="mt-2 flex-row justify-between">
-              <Pressable disabled={submitting} onPress={resendCode}>
-                <ThemedText className="text-link">Resend code</ThemedText>
-              </Pressable>
-              <Pressable
-                disabled={submitting}
+              <Button variant="link" loading={submitting} onPress={resendCode}>
+                Resend code
+              </Button>
+              <Button
+                variant="link"
+                loading={submitting}
                 onPress={() => {
                   setStep('email');
                   setCode('');
@@ -180,8 +173,8 @@ export default function SignInScreen() {
                   setFeedback('');
                 }}
               >
-                <ThemedText className="text-link">Change email</ThemedText>
-              </Pressable>
+                Change email
+              </Button>
             </View>
           ) : null}
 

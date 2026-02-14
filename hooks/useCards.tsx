@@ -232,17 +232,25 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
 
       const now = Date.now();
       const reviewUpdate = scheduleReview(card, rating, now);
+      const reviewEventId = id();
 
       try {
-        await db.transact(
+        await db.transact([
           db.tx.cards[card.id].update(
             compactObject({
               ownerId,
               ...reviewUpdate,
               updatedAt: now,
             })
-          )
-        );
+          ),
+          db.tx.reviewEvents[reviewEventId].update({
+            ownerId,
+            cardId: card.id,
+            rating,
+            reviewedAt: now,
+            createdAt: now,
+          }),
+        ]);
         setMutationError(null);
       } catch (err) {
         setMutationError(err instanceof Error ? err.message : 'Could not save review result.');

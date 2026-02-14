@@ -1,11 +1,12 @@
 import { Pressable, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Card } from '@/components/ui';
 import { cn } from '@/lib/cn';
-import type { Card } from '@/types/card';
+import type { Card as CardRecord } from '@/types/card';
 
 type CardGridItemProps = {
-  card: Card;
+  card: CardRecord;
   onPress: (cardId: string) => void;
 };
 
@@ -35,7 +36,7 @@ export function CardGridItem({ card, onPress }: CardGridItemProps) {
       })}
       onPress={() => onPress(card.id)}
     >
-      <View className="min-h-[210px] rounded-[14px] bg-surface-light p-3 dark:bg-surface-dark">
+      <Card className="min-h-[210px]" padding="sm">
         <View className="mb-2 gap-1.5">
           <ThemedText type="defaultSemiBold" numberOfLines={1} className="mb-0.5">
             {card.title || 'Untitled card'}
@@ -65,7 +66,7 @@ export function CardGridItem({ card, onPress }: CardGridItemProps) {
             {card.imageUris.length} image{card.imageUris.length > 1 ? 's' : ''}
           </ThemedText>
         ) : null}
-      </View>
+      </Card>
     </Pressable>
   );
 }

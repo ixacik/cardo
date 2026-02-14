@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DeckRailSection } from '@/components/explore/deck-rail-section';
 import { SearchBarTrigger } from '@/components/explore/search-bar-trigger';
 import { ThemedText } from '@/components/themed-text';
+import { Card, Label } from '@/components/ui';
 import { useExploreFeed } from '@/hooks/useExploreFeed';
 import { EXPLORE_CATEGORIES } from '@/types/explore';
 
@@ -50,19 +51,13 @@ export default function ExploreFeedScreen() {
         <View className="mt-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2 px-5">
             {EXPLORE_CATEGORIES.map((category) => (
-              <Pressable
+              <Label
                 key={category.id}
                 onPress={() => onOpenCategory(category.label)}
-                className="rounded-full px-3.5 py-1.5"
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.85 : 1,
-                  backgroundColor: `${category.accentColor}20`,
-                })}
+                accentColor={category.accentColor}
               >
-                <ThemedText className="text-xs font-semibold" style={{ color: category.accentColor }}>
-                  {category.label}
-                </ThemedText>
-              </Pressable>
+                {category.label}
+              </Label>
             ))}
           </ScrollView>
         </View>
@@ -76,19 +71,19 @@ export default function ExploreFeedScreen() {
 
         {error ? (
           <View className="px-5 pt-3">
-            <View className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
+            <Card className="rounded-2xl bg-danger/10">
               <ThemedText className="text-danger">{error}</ThemedText>
-            </View>
+            </Card>
           </View>
         ) : null}
 
         {!loading && !error && isEmpty ? (
-          <View className="mx-5 mt-6 rounded-3xl border border-border-light bg-surface-light p-6 dark:border-border-dark dark:bg-surface-dark">
+          <Card className="mx-5 mt-6 rounded-3xl" padding="lg">
             <ThemedText type="subtitle">No published decks yet</ThemedText>
             <ThemedText className="mt-2 opacity-75">
               Explore will populate once users publish decks. Use search to check specific topics or come back later.
             </ThemedText>
-          </View>
+          </Card>
         ) : null}
 
         {!loading && !error

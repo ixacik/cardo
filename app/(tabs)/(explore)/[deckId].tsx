@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SocialStatRow } from '@/components/explore/social-stat-row';
 import { ThemedText } from '@/components/themed-text';
+import { Button, Card, Label } from '@/components/ui';
 import {
   toDeckCardPreview,
   toDeckSummary,
@@ -87,13 +88,9 @@ export default function DeckDetailsScreen() {
           This deck may be private, removed, or unavailable in your current permissions.
         </ThemedText>
 
-        <Pressable
-          className="mt-6 items-center rounded-control bg-primary px-4 py-3"
-          onPress={() => router.back()}
-          style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
-        >
-          <ThemedText className="font-semibold text-white">Back to Explore</ThemedText>
-        </Pressable>
+        <Button className="mt-6" onPress={() => router.back()}>
+          Back to Explore
+        </Button>
       </View>
     );
   }
@@ -115,14 +112,15 @@ export default function DeckDetailsScreen() {
         contentContainerClassName="gap-4 px-5 pb-10 pt-4"
         showsVerticalScrollIndicator={false}
       >
-        <View className="overflow-hidden rounded-3xl border border-border-light bg-surface-light dark:border-border-dark dark:bg-surface-dark">
+        <Card
+          className="overflow-hidden rounded-3xl"
+          padding="none"
+        >
           <View className="px-5 pb-5 pt-4" style={{ backgroundColor: `${badgeColor}20` }}>
             <View className="mb-3 flex-row items-center justify-between">
-              <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: `${badgeColor}30` }}>
-                <ThemedText className="text-xs font-semibold" style={{ color: badgeColor }}>
-                  {deck.category?.label ?? 'General'}
-                </ThemedText>
-              </View>
+              <Label variant="badge" accentColor={badgeColor}>
+                {deck.category?.label ?? 'General'}
+              </Label>
               <ThemedText className="text-xs opacity-75">{deck.cardCount} cards</ThemedText>
             </View>
 
@@ -150,32 +148,23 @@ export default function DeckDetailsScreen() {
             />
 
             <View className="mt-2 flex-row gap-2">
-              <Pressable
-                disabled
-                className="flex-1 items-center rounded-control bg-primary/50 px-4 py-3"
-              >
-                <ThemedText className="font-semibold text-white">Download (coming soon)</ThemedText>
-              </Pressable>
+              <Button disabled className="flex-1 bg-primary/50">
+                Download (coming soon)
+              </Button>
 
-              <Pressable
-                disabled
-                className="flex-1 items-center rounded-control border border-border-light bg-surface-light px-4 py-3 dark:border-border-dark dark:bg-surface-dark"
-              >
-                <ThemedText className="font-semibold opacity-75">Rate (coming soon)</ThemedText>
-              </Pressable>
+              <Button variant="secondary" disabled className="flex-1" textClassName="opacity-75">
+                Rate (coming soon)
+              </Button>
             </View>
           </View>
-        </View>
+        </Card>
 
         <View className="gap-2">
           <ThemedText type="subtitle">Card previews</ThemedText>
 
           {cards.length ? (
             cards.map((card, index) => (
-              <View
-                key={card.id}
-                className="rounded-2xl border border-border-light bg-surface-light p-4 dark:border-border-dark dark:bg-surface-dark"
-              >
+              <Card key={card.id} className="rounded-2xl">
                 <ThemedText type="defaultSemiBold" numberOfLines={1}>
                   {index + 1}. {card.title}
                 </ThemedText>
@@ -185,12 +174,12 @@ export default function DeckDetailsScreen() {
                 <ThemedText className="mt-2 text-sm opacity-75" numberOfLines={4}>
                   Back: {card.backText || 'No back text'}
                 </ThemedText>
-              </View>
+              </Card>
             ))
           ) : (
-            <View className="rounded-2xl border border-border-light bg-surface-light p-4 dark:border-border-dark dark:bg-surface-dark">
+            <Card className="rounded-2xl">
               <ThemedText className="opacity-75">No card previews available for this deck yet.</ThemedText>
-            </View>
+            </Card>
           )}
         </View>
       </ScrollView>

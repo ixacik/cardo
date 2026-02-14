@@ -46,7 +46,15 @@ const schema = i.schema({
     settings: i.entity({
       ownerId: i.string().indexed().unique(),
       profileName: i.string().optional(),
+      avatarPath: i.string().optional(),
       updatedAt: i.number().indexed(),
+    }),
+    reviewEvents: i.entity({
+      ownerId: i.string().indexed(),
+      cardId: i.string().indexed(),
+      rating: i.string().indexed(),
+      reviewedAt: i.number().indexed(),
+      createdAt: i.number().indexed(),
     }),
   },
   links: {
