@@ -1,13 +1,12 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function CardsTabStackLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerLargeTitle: true,
-      }}
-    >
-      <Stack.Screen name="index" options={{ title: 'Goon' }} />
-    </Stack>
-  );
+	return (
+		<Stack>
+			<Stack.Screen
+				name="index"
+				options={{ title: "Cards", headerLargeTitleEnabled: true }}
+			/>
+		</Stack>
+	);
 }
