@@ -98,91 +98,87 @@ export default function DeckDetailsScreen() {
   const badgeColor = deck.category?.accentColor ?? '#0a84ff';
 
   return (
-    <View
+    <ScrollView
       className="flex-1 bg-app-light dark:bg-app-dark"
-      style={{
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
-        paddingBottom: insets.bottom,
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerClassName="gap-4 pt-4"
+      contentContainerStyle={{
+        paddingLeft: insets.left + 20,
+        paddingRight: insets.right + 20,
+        paddingBottom: insets.bottom + 40,
       }}
+      showsVerticalScrollIndicator={false}
     >
-      <ScrollView
-        className="flex-1"
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerClassName="gap-4 px-5 pb-10 pt-4"
-        showsVerticalScrollIndicator={false}
+      <Card
+        className="overflow-hidden rounded-3xl"
+        padding="none"
       >
-        <Card
-          className="overflow-hidden rounded-3xl"
-          padding="none"
-        >
-          <View className="px-5 pb-5 pt-4" style={{ backgroundColor: `${badgeColor}20` }}>
-            <View className="mb-3 flex-row items-center justify-between">
-              <Label variant="badge" accentColor={badgeColor}>
-                {deck.category?.label ?? 'General'}
-              </Label>
-              <ThemedText className="text-xs opacity-75">{deck.cardCount} cards</ThemedText>
-            </View>
-
-            <ThemedText type="title" className="text-[30px] leading-9">
-              {deck.title}
-            </ThemedText>
-
-            <ThemedText className="mt-2 opacity-80">
-              {deck.description || deck.subtitle || 'Community deck'}
-            </ThemedText>
-
-            <ThemedText className="mt-3 text-sm opacity-75">By {deck.ownerDisplayName}</ThemedText>
-            <ThemedText className="mt-0.5 text-xs opacity-70">
-              Published {formatPublishedDate(deck.publishedAt)}
-            </ThemedText>
+        <View className="px-5 pb-5 pt-4" style={{ backgroundColor: `${badgeColor}20` }}>
+          <View className="mb-3 flex-row items-center justify-between">
+            <Label variant="badge" accentColor={badgeColor}>
+              {deck.category?.label ?? 'General'}
+            </Label>
+            <ThemedText className="text-xs opacity-75">{deck.cardCount} cards</ThemedText>
           </View>
 
-          <View className="gap-2 px-5 pb-5 pt-4">
-            <SocialStatRow
-              downloadsCount={deck.downloadsCount}
-              likesCount={deck.likesCount}
-              savesCount={deck.savesCount}
-              averageRating={deck.averageRating}
-              ratingCount={deck.ratingCount}
-            />
+          <ThemedText type="title" className="text-[30px] leading-9">
+            {deck.title}
+          </ThemedText>
 
-            <View className="mt-2 flex-row gap-2">
-              <Button disabled className="flex-1 bg-primary/50">
-                Download (coming soon)
-              </Button>
+          <ThemedText className="mt-2 opacity-80">
+            {deck.description || deck.subtitle || 'Community deck'}
+          </ThemedText>
 
-              <Button variant="secondary" disabled className="flex-1" textClassName="opacity-75">
-                Rate (coming soon)
-              </Button>
-            </View>
-          </View>
-        </Card>
-
-        <View className="gap-2">
-          <ThemedText type="subtitle">Card previews</ThemedText>
-
-          {cards.length ? (
-            cards.map((card, index) => (
-              <Card key={card.id} className="rounded-2xl">
-                <ThemedText type="defaultSemiBold" numberOfLines={1}>
-                  {index + 1}. {card.title}
-                </ThemedText>
-                <ThemedText className="mt-2 text-sm opacity-80" numberOfLines={4}>
-                  Front: {card.frontText || 'No front text'}
-                </ThemedText>
-                <ThemedText className="mt-2 text-sm opacity-75" numberOfLines={4}>
-                  Back: {card.backText || 'No back text'}
-                </ThemedText>
-              </Card>
-            ))
-          ) : (
-            <Card className="rounded-2xl">
-              <ThemedText className="opacity-75">No card previews available for this deck yet.</ThemedText>
-            </Card>
-          )}
+          <ThemedText className="mt-3 text-sm opacity-75">By {deck.ownerDisplayName}</ThemedText>
+          <ThemedText className="mt-0.5 text-xs opacity-70">
+            Published {formatPublishedDate(deck.publishedAt)}
+          </ThemedText>
         </View>
-      </ScrollView>
-    </View>
+
+        <View className="gap-2 px-5 pb-5 pt-4">
+          <SocialStatRow
+            downloadsCount={deck.downloadsCount}
+            likesCount={deck.likesCount}
+            savesCount={deck.savesCount}
+            averageRating={deck.averageRating}
+            ratingCount={deck.ratingCount}
+          />
+
+          <View className="mt-2 flex-row gap-2">
+            <Button disabled className="flex-1 bg-primary/50">
+              Download (coming soon)
+            </Button>
+
+            <Button variant="secondary" disabled className="flex-1" textClassName="opacity-75">
+              Rate (coming soon)
+            </Button>
+          </View>
+        </View>
+      </Card>
+
+      <View className="gap-2">
+        <ThemedText type="subtitle">Card previews</ThemedText>
+
+        {cards.length ? (
+          cards.map((card, index) => (
+            <Card key={card.id} className="rounded-2xl">
+              <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                {index + 1}. {card.title}
+              </ThemedText>
+              <ThemedText className="mt-2 text-sm opacity-80" numberOfLines={4}>
+                Front: {card.frontText || 'No front text'}
+              </ThemedText>
+              <ThemedText className="mt-2 text-sm opacity-75" numberOfLines={4}>
+                Back: {card.backText || 'No back text'}
+              </ThemedText>
+            </Card>
+          ))
+        ) : (
+          <Card className="rounded-2xl">
+            <ThemedText className="opacity-75">No card previews available for this deck yet.</ThemedText>
+          </Card>
+        )}
+      </View>
+    </ScrollView>
   );
 }
