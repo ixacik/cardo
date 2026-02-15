@@ -64,7 +64,7 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen name="card/[id]" options={{ presentation: 'card', title: 'Card Details' }} />
-            <Stack.Screen name="review/index" options={{ presentation: 'card', title: 'Review' }} />
+            <Stack.Screen name="review/index" options={{ presentation: 'card', headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           </Stack>
         </CardsProvider>

@@ -6,6 +6,8 @@
   --color-app-dark: #000000;
   --color-surface-light: #ffffff;
   --color-surface-dark: #1c1c1e;
+  --color-tertiary-light: #f7f7fa;
+  --color-tertiary-dark: #2a2a2e;
   --color-panel-light: #ffffff;
   --color-panel-dark: #111111;
 
@@ -30,6 +32,7 @@
   --color-danger: #d32f2f;
   --color-danger-strong: #c62828;
   --color-warning: #ef6c00;
+  --color-rating-good: #f4c542;
   --color-success: #2e7d32;
   --color-info: #1565c0;
 
