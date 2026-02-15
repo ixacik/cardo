@@ -51,7 +51,7 @@ type GradeButtonRowProps = {
 	index: number;
 	isSelected: boolean;
 	onGrade: (rating: ReviewRating) => void;
-	selectedContentColor: string;
+	selectedBackgroundColor: string;
 	visibilityProgress: SharedValue<number>;
 	gradeBounceTrigger: SharedValue<number>;
 };
@@ -63,7 +63,7 @@ function GradeButtonRow({
 	index,
 	isSelected,
 	onGrade,
-	selectedContentColor,
+	selectedBackgroundColor,
 	visibilityProgress,
 	gradeBounceTrigger,
 }: GradeButtonRowProps) {
@@ -137,19 +137,21 @@ function GradeButtonRow({
 				onPress={() => onGrade(button.rating)}
 				className={
 					isSelected
-						? "items-center justify-center rounded-2xl bg-success px-4 py-3"
+						? "items-center justify-center rounded-2xl px-4 py-3"
 						: "items-center justify-center rounded-2xl bg-tertiary-light px-4 py-3 dark:bg-tertiary-dark"
 				}
-				style={({ pressed }) => ({
-					opacity:
-						isSelected
-							? 1
-							: disabled
-								? 0.6
-								: pressed
-									? 0.9
-									: 1,
-				})}
+				style={({ pressed }) => {
+					const opacity = isSelected
+						? 1
+						: disabled
+							? 0.6
+							: pressed
+								? 0.9
+								: 1;
+					return isSelected
+						? { backgroundColor: selectedBackgroundColor, opacity }
+						: { opacity };
+				}}
 			>
 				<View className="flex-row items-center justify-center gap-2">
 					<MaterialIcons
@@ -213,28 +215,27 @@ export function ReviewGradeBar({
 
 	return (
 		<View className="gap-2.5">
-			{gradeButtons.map((button, index) => (
-				(() => {
+				{gradeButtons.map((button, index) => {
 					const isSelected = celebratingRating === button.rating;
 					const iconColor = isSelected
 						? selectedContentColor
 						: iconColorByTone[button.iconTone];
+					const selectedBackgroundColor = iconColorByTone[button.iconTone];
 					return (
-				<GradeButtonRow
-					key={button.rating}
-					button={button}
-					disabled={disabled}
-					iconColor={iconColor}
-					index={index}
-					isSelected={isSelected}
-					onGrade={onGrade}
-					selectedContentColor={selectedContentColor}
-					visibilityProgress={visibilityProgress}
-					gradeBounceTrigger={gradeBounceTrigger}
-				/>
+						<GradeButtonRow
+							key={button.rating}
+							button={button}
+							disabled={disabled}
+							iconColor={iconColor}
+							index={index}
+							isSelected={isSelected}
+							onGrade={onGrade}
+							selectedBackgroundColor={selectedBackgroundColor}
+							visibilityProgress={visibilityProgress}
+							gradeBounceTrigger={gradeBounceTrigger}
+						/>
 					);
-				})()
-			))}
+				})}
 		</View>
 	);
 }
