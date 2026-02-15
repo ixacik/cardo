@@ -1,12 +1,10 @@
-import { Redirect, router, useLocalSearchParams, type Href } from 'expo-router';
+import { Redirect, Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Pressable, ScrollView } from 'react-native';
 
 import { CardEditorFields, type CardEditorValue } from '@/components/cards/card-editor-fields';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
 
@@ -20,7 +18,6 @@ const EMPTY_FORM: CardEditorValue = {
 export default function CreateIndexCardScreen() {
   const { addCard } = useCards();
   const { user, isLoading } = db.useAuth();
-  const insets = useSafeAreaInsets();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
 
   const [formValue, setFormValue] = useState<CardEditorValue>(EMPTY_FORM);
@@ -50,6 +47,10 @@ export default function CreateIndexCardScreen() {
   }
 
   const onSubmit = async () => {
+    if (submitting) {
+      return;
+    }
+
     const titleTrimmed = formValue.title.trim();
     const frontTrimmed = formValue.frontText.trim();
     const backTrimmed = formValue.backText.trim();
@@ -84,6 +85,10 @@ export default function CreateIndexCardScreen() {
   };
 
   const onClose = () => {
+    if (submitting) {
+      return;
+    }
+
     const nextPath = getReturnPath();
     if (nextPath) {
       router.replace(nextPath);
@@ -93,58 +98,59 @@ export default function CreateIndexCardScreen() {
   };
 
   return (
-    <ThemedView
-      className="flex-1 bg-panel-light px-3 py-3 dark:bg-panel-dark"
-      style={{
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 12,
-        paddingLeft: insets.left + 12,
-        paddingRight: insets.right + 12,
-      }}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={12}
-        className="flex-1"
+    <>
+      <Stack.Screen
+        options={{
+          title: 'New Card',
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerBackVisible: false,
+          headerLeft: () => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Cancel"
+              accessibilityHint="Dismisses the new card modal"
+              disabled={submitting}
+              onPress={onClose}
+              className="px-1.5 py-1"
+              style={({ pressed }) => ({ opacity: submitting ? 0.45 : pressed ? 0.6 : 1 })}
+            >
+              <ThemedText className="text-base text-link">Cancel</ThemedText>
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Save card"
+              accessibilityHint="Saves this card and closes the modal"
+              disabled={submitting}
+              onPress={onSubmit}
+              className="px-1.5 py-1"
+              style={({ pressed }) => ({ opacity: submitting ? 0.45 : pressed ? 0.6 : 1 })}
+            >
+              <ThemedText className="text-base font-semibold text-primary">{submitting ? 'Saving...' : 'Save'}</ThemedText>
+            </Pressable>
+          ),
+        }}
+      />
+      <ScrollView
+        className="flex-1 bg-panel-light dark:bg-panel-dark"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerClassName="gap-2.5 p-5 pb-24"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          className="flex-1"
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerClassName="gap-2.5 p-5"
-          contentContainerStyle={{ paddingBottom: 140 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <ThemedText type="title" className="mb-3">
-            New card
-          </ThemedText>
-
-          <CardEditorFields
-            value={formValue}
-            onChange={setFormValue}
-            disabled={submitting}
-            errors={{
-              title: titleError,
-              frontText: frontError,
-              backText: backError,
-            }}
-          />
-
-          <Button className="mt-4" loading={submitting} onPress={onSubmit}>
-            Save card
-          </Button>
-
-          <Button
-            variant="secondary"
-            className="mt-2"
-            textClassName="text-link"
-            loading={submitting}
-            onPress={onClose}
-          >
-            Cancel
-          </Button>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ThemedView>
+        <CardEditorFields
+          value={formValue}
+          onChange={setFormValue}
+          disabled={submitting}
+          errors={{
+            title: titleError,
+            frontText: frontError,
+            backText: backError,
+          }}
+        />
+      </ScrollView>
+    </>
   );
 }

@@ -15,6 +15,9 @@ export default function SettingsTabStackLayout() {
     <Stack
       screenOptions={{
         headerLargeTitle: true,
+        contentStyle: {
+          backgroundColor: colors.background,
+        },
       }}
     >
       <Stack.Screen
