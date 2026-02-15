@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 
 import { CardGridItem } from "@/components/cards/card-grid-item";
 import { DeckGridItem } from "@/components/cards/deck-grid-item";
 import { ThemedText } from "@/components/themed-text";
-import { Button, Card } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCards } from "@/hooks/useCards";
 import type { Card as CardRecord } from "@/types/card";
@@ -127,9 +127,18 @@ export default function HomeScreen() {
 						due now
 					</ThemedText>
 				</View>
-				<Button onPress={onOpenReview} textClassName="font-bold">
-					Start Review
-				</Button>
+				<Pressable
+					accessibilityRole="button"
+					accessibilityLabel="Start review"
+					accessibilityHint="Opens your review session"
+					onPress={onOpenReview}
+					className="items-center rounded-full bg-primary px-4 py-3"
+					style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+				>
+					<ThemedText className="text-center font-bold text-white">
+						Start Review
+					</ThemedText>
+				</Pressable>
 				{loading ? (
 					<ThemedText className="mt-2.5 opacity-70">
 						Loading cards...

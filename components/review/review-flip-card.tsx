@@ -1,5 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -8,46 +13,41 @@ type ReviewFlipCardProps = {
   title: string;
   frontText: string;
   backText: string;
-  isFlipped: boolean;
-  onFlip: () => void;
+  flipProgress: SharedValue<number>;
 };
 
 export function ReviewFlipCard({
   title,
   frontText,
   backText,
-  isFlipped,
-  onFlip,
+  flipProgress,
 }: ReviewFlipCardProps) {
-  const rotation = useRef(new Animated.Value(0)).current;
+  const frontAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { perspective: 1000 },
+      {
+        rotateY: `${interpolate(flipProgress.value, [0, 1], [0, 180], Extrapolation.CLAMP)}deg`,
+      },
+    ],
+    opacity: interpolate(flipProgress.value, [0, 0.45, 0.55, 1], [1, 1, 0, 0], Extrapolation.CLAMP),
+  }));
 
-  useEffect(() => {
-    Animated.timing(rotation, {
-      toValue: isFlipped ? 1 : 0,
-      duration: 280,
-      useNativeDriver: true,
-    }).start();
-  }, [isFlipped, rotation]);
-
-  const frontRotation = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const backRotation = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['180deg', '360deg'],
-  });
+  const backAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { perspective: 1000 },
+      {
+        rotateY: `${interpolate(flipProgress.value, [0, 1], [180, 360], Extrapolation.CLAMP)}deg`,
+      },
+    ],
+    opacity: interpolate(flipProgress.value, [0, 0.45, 0.55, 1], [0, 0, 1, 1], Extrapolation.CLAMP),
+  }));
 
   return (
-    <Pressable accessibilityRole="button" onPress={onFlip} className="mt-5 min-h-80">
+    <View className="mt-5 min-h-80">
       <Animated.View
-        pointerEvents={isFlipped ? 'none' : 'auto'}
+        pointerEvents="none"
         className="absolute min-h-80 w-full"
-        style={{
-          backfaceVisibility: 'hidden',
-          transform: [{ perspective: 1000 }, { rotateY: frontRotation }],
-        }}
+        style={[frontAnimatedStyle, { backfaceVisibility: 'hidden' }]}
       >
         <Card className="min-h-80 overflow-hidden rounded-2xl" padding="none">
           <View className="flex-1 p-5">
@@ -58,18 +58,15 @@ export function ReviewFlipCard({
               Front
             </ThemedText>
             <ThemedText className="leading-6">{frontText}</ThemedText>
-            <ThemedText className="mt-auto opacity-60">Tap to reveal answer</ThemedText>
+            <ThemedText className="mt-auto pb-1 opacity-60">Tap to reveal answer</ThemedText>
           </View>
         </Card>
       </Animated.View>
 
       <Animated.View
-        pointerEvents={isFlipped ? 'auto' : 'none'}
+        pointerEvents="none"
         className="absolute min-h-80 w-full"
-        style={{
-          backfaceVisibility: 'hidden',
-          transform: [{ perspective: 1000 }, { rotateY: backRotation }],
-        }}
+        style={[backAnimatedStyle, { backfaceVisibility: 'hidden' }]}
       >
         <Card className="min-h-80 overflow-hidden rounded-2xl" padding="none">
           <View className="flex-1 p-5">
@@ -80,10 +77,10 @@ export function ReviewFlipCard({
               Back
             </ThemedText>
             <ThemedText className="leading-6">{backText}</ThemedText>
-            <ThemedText className="mt-auto opacity-60">Tap to see front again</ThemedText>
+            <ThemedText className="mt-auto pb-1 opacity-60">Tap to see front again</ThemedText>
           </View>
         </Card>
       </Animated.View>
-    </Pressable>
+    </View>
   );
 }

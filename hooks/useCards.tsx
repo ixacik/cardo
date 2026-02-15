@@ -41,6 +41,7 @@ type RawCard = {
 };
 
 const CardContext = createContext<CardContextValue | null>(null);
+const DEBUG_ALWAYS_DUE = process.env.EXPO_PUBLIC_DEBUG_ALL_CARDS_DUE === '1';
 
 const parseImageUris = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
@@ -66,6 +67,8 @@ const toCard = (row: RawCard): Card => {
   const now = Date.now();
   const createdAt = toNumber(row.createdAt, now);
   const defaultReviewMeta = createInitialReviewMeta(createdAt);
+  const parsedDueAt = toNumber(row.dueAt, defaultReviewMeta.dueAt);
+  const dueAt = DEBUG_ALWAYS_DUE ? Math.min(parsedDueAt, now) : parsedDueAt;
 
   return {
     id: row.id,
@@ -75,7 +78,7 @@ const toCard = (row: RawCard): Card => {
     backText: typeof row.backText === 'string' ? row.backText : '',
     imageUris: parseImageUris(row.imageUris),
     reviewState: isReviewState(row.reviewState) ? row.reviewState : defaultReviewMeta.reviewState,
-    dueAt: toNumber(row.dueAt, defaultReviewMeta.dueAt),
+    dueAt,
     stability: toOptionalNumber(row.stability),
     difficulty: toOptionalNumber(row.difficulty),
     elapsedDays: toOptionalNumber(row.elapsedDays),
