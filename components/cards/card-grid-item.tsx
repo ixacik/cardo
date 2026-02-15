@@ -30,17 +30,15 @@ export function CardGridItem({ card, onPress }: CardGridItemProps) {
 
   return (
     <Pressable
-      className="min-w-0 flex-1"
+      className="min-w-0 basis-0 flex-1"
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.985 : 1 }],
       })}
       onPress={() => onPress(card.id)}
     >
-      <Card className="min-h-[210px]" padding="sm">
-        <View className="mb-2 gap-1.5">
-          <ThemedText type="defaultSemiBold" numberOfLines={1} className="mb-0.5">
-            {card.title || 'Untitled card'}
-          </ThemedText>
+      <Card className="h-[180px]" padding="sm">
+        <View className="h-full justify-between gap-2">
+          <ThemedText type="defaultSemiBold">{card.title || 'Untitled card'}</ThemedText>
           <View
             className={cn(
               'self-start rounded-full px-2 py-[3px]',
@@ -52,20 +50,6 @@ export function CardGridItem({ card, onPress }: CardGridItemProps) {
             </ThemedText>
           </View>
         </View>
-
-        <ThemedText numberOfLines={4} className="leading-[22px] opacity-90">
-          {card.frontText}
-        </ThemedText>
-
-        <ThemedText numberOfLines={3} className="mt-2.5 leading-5 opacity-75">
-          {card.backText}
-        </ThemedText>
-
-        {card.imageUris && card.imageUris.length > 0 ? (
-          <ThemedText type="defaultSemiBold" className="mt-auto text-[13px] opacity-60">
-            {card.imageUris.length} image{card.imageUris.length > 1 ? 's' : ''}
-          </ThemedText>
-        ) : null}
       </Card>
     </Pressable>
   );

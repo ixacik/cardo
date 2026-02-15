@@ -19,14 +19,21 @@ export default function CardsTabStackLayout() {
 	};
 
 	return (
-			<Stack
-				screenOptions={{
-					headerLargeTitle: true,
-					contentStyle: {
-						backgroundColor: colors.background,
-					},
-				}}
-			>
+		<Stack
+			screenOptions={{
+				headerLargeTitle: true,
+				contentStyle: {
+					backgroundColor: colors.background,
+				},
+				headerStyle: {
+					backgroundColor: colors.background,
+				},
+				headerLargeStyle: {
+					backgroundColor: colors.background,
+				},
+				headerShadowVisible: false,
+			}}
+		>
 			<Stack.Screen
 				name="index"
 				options={{
@@ -41,9 +48,7 @@ export default function CardsTabStackLayout() {
 							style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
 						>
 							<IconSymbol name="flame" size={20} color={"#FF8904"} />
-							<ThemedText className="text-sm font-semibold">
-								{streakDays}d
-							</ThemedText>
+							<ThemedText className="text-sm font-semibold">{streakDays}d</ThemedText>
 						</Pressable>
 					),
 					headerRight: () => (
@@ -60,6 +65,13 @@ export default function CardsTabStackLayout() {
 							</Pressable>
 						</View>
 					),
+				}}
+			/>
+			<Stack.Screen
+				name="deck/[deckName]"
+				options={{
+					title: "Deck",
+					headerLargeTitle: false,
 				}}
 			/>
 		</Stack>

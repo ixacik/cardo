@@ -18,6 +18,13 @@ export default function SettingsTabStackLayout() {
         contentStyle: {
           backgroundColor: colors.background,
         },
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerLargeStyle: {
+          backgroundColor: colors.background,
+        },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen

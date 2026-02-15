@@ -103,6 +103,10 @@ export default function HomeScreen() {
 		router.push(`/card/${cardId}`);
 	};
 
+	const onOpenDeck = (deckName: string) => {
+		router.push(`/(tabs)/(cards)/deck/${encodeURIComponent(deckName)}` as never);
+	};
+
 	const onOpenReview = () => {
 		router.push("/review");
 	};
@@ -161,14 +165,15 @@ export default function HomeScreen() {
 					<View className="gap-2.5">
 						{deckRows.map((row, rowIndex) => (
 							<View key={`deck-row-${rowIndex}`} className="flex-row gap-2.5">
-								{row.map((deck) => (
-									<DeckGridItem
-										key={deck.name}
-										name={deck.name}
-										totalCards={deck.totalCards}
-										dueCards={deck.dueCards}
-									/>
-								))}
+									{row.map((deck) => (
+										<DeckGridItem
+											key={deck.name}
+											name={deck.name}
+											totalCards={deck.totalCards}
+											dueCards={deck.dueCards}
+											onPress={onOpenDeck}
+										/>
+									))}
 								{row.length === 1 ? <View className="flex-1" /> : null}
 							</View>
 						))}

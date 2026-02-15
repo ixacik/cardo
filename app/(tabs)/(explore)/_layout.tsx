@@ -11,6 +11,13 @@ export default function ExploreTabStackLayout() {
         contentStyle: {
           backgroundColor: colors.background,
         },
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerLargeStyle: {
+          backgroundColor: colors.background,
+        },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Explore' }} />

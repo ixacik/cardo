@@ -27,6 +27,8 @@ export default function RootLayout() {
         colors: {
           ...DarkTheme.colors,
           background: APP_BACKGROUND_DARK,
+          card: APP_BACKGROUND_DARK,
+          border: APP_BACKGROUND_DARK,
         },
       }
     : {
@@ -34,6 +36,8 @@ export default function RootLayout() {
         colors: {
           ...DefaultTheme.colors,
           background: APP_BACKGROUND_LIGHT,
+          card: APP_BACKGROUND_LIGHT,
+          border: APP_BACKGROUND_LIGHT,
         },
       };
 
@@ -50,6 +54,13 @@ export default function RootLayout() {
               contentStyle: {
                 backgroundColor: appBackgroundColor,
               },
+              headerStyle: {
+                backgroundColor: appBackgroundColor,
+              },
+              headerLargeStyle: {
+                backgroundColor: appBackgroundColor,
+              },
+              headerShadowVisible: false,
             }}
           >
             <Stack.Screen name="sign-in" options={{ headerShown: false }} />

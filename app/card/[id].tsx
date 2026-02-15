@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardEditorFields, type CardEditorValue } from '@/components/cards/card-editor-fields';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, TextField } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
 
@@ -49,6 +49,9 @@ export default function CardDetailsScreen() {
   const [backError, setBackError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [savingDeckAssignment, setSavingDeckAssignment] = useState(false);
+  const [showDeckAssignment, setShowDeckAssignment] = useState(false);
+  const [deckNameDraft, setDeckNameDraft] = useState(card?.deckName ?? '');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,6 +61,14 @@ export default function CardDetailsScreen() {
 
     setFormValue(toFormValue(card.title, card.frontText, card.backText, card.imageUris));
   }, [card, isEditing]);
+
+  useEffect(() => {
+    if (!card || showDeckAssignment) {
+      return;
+    }
+
+    setDeckNameDraft(card.deckName ?? '');
+  }, [card, showDeckAssignment]);
 
   if (isLoading) {
     return (
@@ -168,6 +179,37 @@ export default function CardDetailsScreen() {
     ]);
   };
 
+  const onToggleDeckAssignment = () => {
+    setDeckNameDraft(card.deckName ?? '');
+    setError(null);
+    setShowDeckAssignment((current) => !current);
+  };
+
+  const onSaveDeckAssignment = async () => {
+    const currentDeckName = card.deckName?.trim() ?? '';
+    const nextDeckName = deckNameDraft.trim();
+
+    if (currentDeckName === nextDeckName) {
+      setShowDeckAssignment(false);
+      return;
+    }
+
+    setSavingDeckAssignment(true);
+    setError(null);
+
+    try {
+      await updateCard({
+        ...card,
+        deckName: nextDeckName.length > 0 ? nextDeckName : undefined,
+      });
+      setShowDeckAssignment(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update deck assignment.');
+    } finally {
+      setSavingDeckAssignment(false);
+    }
+  };
+
   return (
     <ThemedView
       className="flex-1 bg-panel-light px-3 py-3 dark:bg-panel-dark"
@@ -270,11 +312,50 @@ export default function CardDetailsScreen() {
             variant="destructive"
             className="mt-[18px]"
             textClassName="font-bold"
-            loading={saving || deleting}
+            loading={saving || deleting || savingDeckAssignment}
             onPress={onDelete}
           >
             Delete card
           </Button>
+
+          <View className="mt-2">
+            <Button
+              variant="secondary"
+              loading={saving || deleting || savingDeckAssignment}
+              onPress={onToggleDeckAssignment}
+            >
+              {showDeckAssignment
+                ? 'Cancel deck assignment'
+                : card.deckName?.trim()
+                  ? 'Change deck assignment'
+                  : 'Assign to deck'}
+            </Button>
+          </View>
+
+          {showDeckAssignment ? (
+            <Card className="mt-2 gap-2 rounded-xl p-3.5" padding="none">
+              <ThemedText type="defaultSemiBold">Assign card to deck</ThemedText>
+              <ThemedText className="text-sm opacity-75">
+                Cards with the same deck name are bundled under Decks on My Cards.
+              </ThemedText>
+              <TextField
+                value={deckNameDraft}
+                onChangeText={setDeckNameDraft}
+                editable={!saving && !deleting && !savingDeckAssignment}
+                autoCapitalize="words"
+                autoCorrect={false}
+                placeholder="Deck name (leave empty to unassign)"
+                returnKeyType="done"
+                onSubmitEditing={onSaveDeckAssignment}
+              />
+              <Button
+                loading={saving || deleting || savingDeckAssignment}
+                onPress={onSaveDeckAssignment}
+              >
+                {deckNameDraft.trim().length > 0 ? 'Save deck assignment' : 'Remove from deck'}
+              </Button>
+            </Card>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>
