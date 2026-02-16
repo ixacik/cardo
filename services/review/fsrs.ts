@@ -3,11 +3,13 @@ import {
   State,
   createEmptyCard,
   fsrs,
+  generatorParameters,
   type Card as FsrsCard,
   type Grade,
 } from 'ts-fsrs';
 
 import type { Card, ReviewRating, ReviewState } from '@/types/card';
+import { DEFAULT_DECK_STUDY_OPTIONS, type DeckStudyOptions } from '@/types/study';
 
 export type CardReviewUpdate = Pick<
   Card,
@@ -23,9 +25,10 @@ export type CardReviewUpdate = Pick<
   | 'lastReviewAt'
 >;
 
-const scheduler = fsrs({
-  enable_fuzz: false,
-});
+type FsrsScheduler = ReturnType<typeof fsrs>;
+type StepDuration = `${number}m` | `${number}h` | `${number}d`;
+
+const schedulerCache = new Map<string, FsrsScheduler>();
 
 const ratingToGrade: Record<ReviewRating, Grade> = {
   again: Rating.Again,
@@ -62,6 +65,42 @@ const fromFsrsState = (state: State): ReviewState => {
   }
 };
 
+const toStepDurations = (steps: number[]): StepDuration[] =>
+  steps
+    .filter((step) => Number.isFinite(step) && step > 0)
+    .map((step) => `${Math.floor(step)}m` as StepDuration);
+
+const buildSchedulerKey = (options: DeckStudyOptions): string =>
+  JSON.stringify({
+    learningSteps: options.learningSteps,
+    relearningSteps: options.relearningSteps,
+    desiredRetention: options.desiredRetention,
+  });
+
+const getScheduler = (options: DeckStudyOptions): FsrsScheduler => {
+  const key = buildSchedulerKey(options);
+  const existing = schedulerCache.get(key);
+  if (existing) {
+    return existing;
+  }
+
+  const learningSteps = toStepDurations(options.learningSteps);
+  const relearningSteps = toStepDurations(options.relearningSteps);
+
+  const scheduler = fsrs(
+    generatorParameters({
+      enable_fuzz: true,
+      enable_short_term: true,
+      learning_steps: learningSteps.length > 0 ? learningSteps : ['1m', '10m'],
+      relearning_steps: relearningSteps.length > 0 ? relearningSteps : ['10m'],
+      request_retention: options.desiredRetention,
+    })
+  );
+
+  schedulerCache.set(key, scheduler);
+  return scheduler;
+};
+
 const buildFsrsCard = (card: Card, now: Date): FsrsCard => {
   const base = createEmptyCard(now);
   return {
@@ -95,10 +134,12 @@ export const createInitialReviewMeta = (now = Date.now()): CardReviewUpdate => (
 export const scheduleReview = (
   card: Card,
   rating: ReviewRating,
-  nowMs = Date.now()
+  nowMs = Date.now(),
+  options: DeckStudyOptions = DEFAULT_DECK_STUDY_OPTIONS
 ): CardReviewUpdate => {
   const now = new Date(nowMs);
   const fsrsCard = buildFsrsCard(card, now);
+  const scheduler = getScheduler(options);
   const next = scheduler.next(fsrsCard, now, ratingToGrade[rating]).card;
 
   return {
@@ -113,22 +154,4 @@ export const scheduleReview = (
     lapses: next.lapses,
     lastReviewAt: next.last_review ? next.last_review.getTime() : nowMs,
   };
-};
-
-const getDueAt = (card: Card): number => (typeof card.dueAt === 'number' ? card.dueAt : card.createdAt);
-
-const isNeverReviewed = (card: Card) => !card.lastReviewAt && card.reps === 0;
-
-export const buildReviewQueue = (cards: Card[], now = Date.now()): Card[] => {
-  const due = cards
-    .filter((card) => getDueAt(card) <= now)
-    .sort((a, b) => getDueAt(a) - getDueAt(b) || a.updatedAt - b.updatedAt);
-
-  if (due.length > 0) {
-    return due;
-  }
-
-  return cards
-    .filter(isNeverReviewed)
-    .sort((a, b) => a.createdAt - b.createdAt || a.updatedAt - b.updatedAt);
 };

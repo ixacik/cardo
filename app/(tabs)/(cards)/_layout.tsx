@@ -1,4 +1,5 @@
 import { useTheme } from "@react-navigation/native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router, Stack } from "expo-router";
 import { Pressable, View } from "react-native";
 
@@ -47,7 +48,11 @@ export default function CardsTabStackLayout() {
 							className="rounded-full px-2.5 py-1 flex-row items-center gap-0.5"
 							style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
 						>
-							<IconSymbol name="flame" size={20} color={"#FF8904"} />
+								<MaterialIcons
+									name="local-fire-department"
+									size={20}
+									color="#FF8904"
+								/>
 							<ThemedText className="text-sm font-semibold">{streakDays}d</ThemedText>
 						</Pressable>
 					),

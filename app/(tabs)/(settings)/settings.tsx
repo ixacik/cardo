@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, TextField } from '@/components/ui';
 import { useCards } from '@/hooks/useCards';
 import { db } from '@/services/instant';
+import { parseLimitInput, parseReviewSettings, type ReviewSettings } from '@/services/review/settings';
 
 type DownloadUrlResponse = {
   url?: unknown;
@@ -19,6 +20,16 @@ type DownloadUrlResponse = {
     downloadUrl?: unknown;
     signedUrl?: unknown;
   };
+};
+
+type RawSettingsRecord = {
+  id?: string;
+  profileName?: unknown;
+  avatarPath?: unknown;
+  dailyReviewGoal?: unknown;
+  reviewSessionLimit?: unknown;
+  learnSessionLimit?: unknown;
+  learnNewCardsPerSession?: unknown;
 };
 
 const toOptionalString = (value: unknown): string | null => {
@@ -92,13 +103,18 @@ export default function SettingsScreen() {
         }
       : null
   );
-  const settingsRecord = settingsQuery.data?.settings?.[0];
+  const settingsRecord = (settingsQuery.data?.settings?.[0] ?? null) as RawSettingsRecord | null;
+  const reviewSettings = parseReviewSettings(settingsRecord);
   const { clearCards } = useCards();
   const authErrorMessage = auth.error?.message ?? null;
   const settingsErrorMessage = settingsQuery.error?.message ?? null;
 
   const [profileName, setProfileName] = useState('');
   const [avatarPath, setAvatarPath] = useState('');
+  const [dailyReviewGoalInput, setDailyReviewGoalInput] = useState('');
+  const [reviewSessionLimitInput, setReviewSessionLimitInput] = useState('');
+  const [learnSessionLimitInput, setLearnSessionLimitInput] = useState('');
+  const [learnNewCardsInput, setLearnNewCardsInput] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [didHydrate, setDidHydrate] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,6 +125,10 @@ export default function SettingsScreen() {
     setDidHydrate(false);
     setProfileName('');
     setAvatarPath('');
+    setDailyReviewGoalInput('');
+    setReviewSessionLimitInput('');
+    setLearnSessionLimitInput('');
+    setLearnNewCardsInput('');
     setAvatarUrl(null);
     setFeedback('');
     setError(null);
@@ -123,8 +143,22 @@ export default function SettingsScreen() {
     const nextAvatarPath = toOptionalString(settingsRecord?.avatarPath) ?? '';
     setProfileName(nextProfileName);
     setAvatarPath(nextAvatarPath);
+    setDailyReviewGoalInput(String(reviewSettings.dailyReviewGoal));
+    setReviewSessionLimitInput(String(reviewSettings.reviewSessionLimit));
+    setLearnSessionLimitInput(String(reviewSettings.learnSessionLimit));
+    setLearnNewCardsInput(String(reviewSettings.learnNewCardsPerSession));
     setDidHydrate(true);
-  }, [didHydrate, settingsQuery.isLoading, settingsRecord?.avatarPath, settingsRecord?.profileName, user]);
+  }, [
+    didHydrate,
+    reviewSettings.dailyReviewGoal,
+    reviewSettings.learnNewCardsPerSession,
+    reviewSettings.learnSessionLimit,
+    reviewSettings.reviewSessionLimit,
+    settingsQuery.isLoading,
+    settingsRecord?.avatarPath,
+    settingsRecord?.profileName,
+    user,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,7 +189,19 @@ export default function SettingsScreen() {
     };
   }, [avatarPath, user?.imageURL]);
 
-  const persistSettings = async (nextProfileName: string, nextAvatarPath: string) => {
+  const parseDraftReviewSettings = (): ReviewSettings =>
+    parseReviewSettings({
+      dailyReviewGoal: parseLimitInput(dailyReviewGoalInput, reviewSettings.dailyReviewGoal),
+      reviewSessionLimit: parseLimitInput(reviewSessionLimitInput, reviewSettings.reviewSessionLimit),
+      learnSessionLimit: parseLimitInput(learnSessionLimitInput, reviewSettings.learnSessionLimit),
+      learnNewCardsPerSession: parseLimitInput(learnNewCardsInput, reviewSettings.learnNewCardsPerSession),
+    });
+
+  const persistSettings = async (
+    nextProfileName: string,
+    nextAvatarPath: string,
+    nextReviewSettings: ReviewSettings
+  ) => {
     if (!user) {
       throw new Error('You must sign in to update settings.');
     }
@@ -166,6 +212,10 @@ export default function SettingsScreen() {
         ownerId: user.id,
         profileName: nextProfileName,
         avatarPath: nextAvatarPath,
+        dailyReviewGoal: nextReviewSettings.dailyReviewGoal,
+        reviewSessionLimit: nextReviewSettings.reviewSessionLimit,
+        learnSessionLimit: nextReviewSettings.learnSessionLimit,
+        learnNewCardsPerSession: nextReviewSettings.learnNewCardsPerSession,
         updatedAt: Date.now(),
       })
     );
@@ -178,7 +228,12 @@ export default function SettingsScreen() {
     setFeedback('');
     setError(null);
     try {
-      await persistSettings(nextProfileName, avatarPath);
+      const nextReviewSettings = parseDraftReviewSettings();
+      setDailyReviewGoalInput(String(nextReviewSettings.dailyReviewGoal));
+      setReviewSessionLimitInput(String(nextReviewSettings.reviewSessionLimit));
+      setLearnSessionLimitInput(String(nextReviewSettings.learnSessionLimit));
+      setLearnNewCardsInput(String(nextReviewSettings.learnNewCardsPerSession));
+      await persistSettings(nextProfileName, avatarPath, nextReviewSettings);
       setFeedback('Profile saved.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save profile.');
@@ -231,7 +286,7 @@ export default function SettingsScreen() {
       await db.storage.uploadFile(nextPath, blob, {
         contentType: asset.mimeType ?? blob.type ?? 'image/jpeg',
       });
-      await persistSettings(profileName.trim(), nextPath);
+      await persistSettings(profileName.trim(), nextPath, parseDraftReviewSettings());
       setAvatarPath(nextPath);
       setFeedback('Avatar updated.');
 
@@ -344,6 +399,31 @@ export default function SettingsScreen() {
             Save profile
           </Button>
         </View>
+      </Card>
+
+      <Card className="rounded-3xl" padding="lg">
+        <ThemedText type="subtitle">Review preferences</ThemedText>
+        <ThemedText className="mt-1 text-sm opacity-75">
+          Use 0 for no cap.
+        </ThemedText>
+
+        <ThemedText className="mt-4">Daily review limit</ThemedText>
+        <TextField
+          value={dailyReviewGoalInput}
+          onChangeText={setDailyReviewGoalInput}
+          keyboardType="number-pad"
+          editable={!saving}
+          placeholder="e.g. 500"
+        />
+
+        <ThemedText className="mt-4">Daily new card limit</ThemedText>
+        <TextField
+          value={learnNewCardsInput}
+          onChangeText={setLearnNewCardsInput}
+          keyboardType="number-pad"
+          editable={!saving}
+          placeholder="e.g. 20"
+        />
       </Card>
 
       <ThemedText className="mt-1">Storage</ThemedText>

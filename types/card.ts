@@ -1,10 +1,14 @@
 export type Card = {
   id: string;
+  noteId: string;
+  cardOrdinal: number;
   deckName?: string;
   title: string;
   frontText: string;
   backText: string;
   imageUris?: string[];
+  isSuspended: boolean;
+  buriedUntilDay?: number;
   reviewState: ReviewState;
   dueAt: number;
   stability?: number;

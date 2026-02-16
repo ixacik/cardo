@@ -3,6 +3,7 @@ import { id } from '@instantdb/react-native';
 
 import { db } from '@/services/instant';
 import { createInitialReviewMeta, scheduleReview } from '@/services/review/fsrs';
+import { DEFAULT_DECK_STUDY_OPTIONS, type DeckStudyOptions } from '@/types/study';
 import type { Card, CardInput, ReviewRating } from '@/types/card';
 import { isReviewState } from '@/types/card';
 
@@ -16,16 +17,20 @@ type CardContextValue = {
   deleteCard: (id: string) => Promise<void>;
   clearCards: () => Promise<void>;
   getCardById: (id: string) => Card | undefined;
-  gradeCardReview: (id: string, rating: ReviewRating) => Promise<void>;
+  gradeCardReview: (id: string, rating: ReviewRating, options?: DeckStudyOptions) => Promise<Card>;
 };
 
 type RawCard = {
   id: string;
+  noteId?: unknown;
+  cardOrdinal?: unknown;
   deckName?: unknown;
   title?: unknown;
   frontText?: unknown;
   backText?: unknown;
   imageUris?: unknown;
+  isSuspended?: unknown;
+  buriedUntilDay?: unknown;
   reviewState?: unknown;
   dueAt?: unknown;
   stability?: unknown;
@@ -60,6 +65,9 @@ const toNumber = (value: unknown, fallback: number): number =>
 const toOptionalNumber = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 
+const toBoolean = (value: unknown, fallback: boolean): boolean =>
+  typeof value === 'boolean' ? value : fallback;
+
 const compactObject = <T extends object>(value: T): Partial<T> =>
   Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined)) as Partial<T>;
 
@@ -72,11 +80,15 @@ const toCard = (row: RawCard): Card => {
 
   return {
     id: row.id,
+    noteId: toOptionalString(row.noteId) ?? row.id,
+    cardOrdinal: toNumber(row.cardOrdinal, 0),
     deckName: toOptionalString(row.deckName),
     title: typeof row.title === 'string' ? row.title : '',
     frontText: typeof row.frontText === 'string' ? row.frontText : '',
     backText: typeof row.backText === 'string' ? row.backText : '',
     imageUris: parseImageUris(row.imageUris),
+    isSuspended: toBoolean(row.isSuspended, false),
+    buriedUntilDay: toOptionalNumber(row.buriedUntilDay),
     reviewState: isReviewState(row.reviewState) ? row.reviewState : defaultReviewMeta.reviewState,
     dueAt,
     stability: toOptionalNumber(row.stability),
@@ -147,11 +159,15 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
       const reviewMeta = createInitialReviewMeta(now);
       const nextCard: Card = {
         id: nextId,
+        noteId: nextId,
+        cardOrdinal: 0,
         deckName: deckName && deckName.length > 0 ? deckName : undefined,
         title,
         frontText,
         backText,
         imageUris,
+        isSuspended: false,
+        buriedUntilDay: undefined,
         ...reviewMeta,
         createdAt: now,
         updatedAt: now,
@@ -162,11 +178,15 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
           db.tx.cards[nextId].update(
             compactObject({
               ownerId,
-              deckName: deckName && deckName.length > 0 ? deckName : undefined,
+              noteId: nextCard.noteId,
+              cardOrdinal: nextCard.cardOrdinal,
+              deckName: nextCard.deckName,
               title,
               frontText,
               backText,
               imageUris,
+              isSuspended: nextCard.isSuspended,
+              buriedUntilDay: nextCard.buriedUntilDay,
               ...reviewMeta,
               createdAt: now,
               updatedAt: now,
@@ -196,11 +216,15 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
           db.tx.cards[card.id].update(
             compactObject({
               ownerId,
+              noteId: card.noteId,
+              cardOrdinal: card.cardOrdinal,
               deckName: deckName && deckName.length > 0 ? deckName : undefined,
               title: card.title.trim(),
               frontText: card.frontText.trim(),
               backText: card.backText.trim(),
               imageUris,
+              isSuspended: card.isSuspended,
+              buriedUntilDay: card.buriedUntilDay,
               reviewState: card.reviewState,
               dueAt: card.dueAt,
               stability: card.stability,
@@ -226,7 +250,11 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const gradeCardReview = useCallback(
-    async (cardId: string, rating: ReviewRating): Promise<void> => {
+    async (
+      cardId: string,
+      rating: ReviewRating,
+      options: DeckStudyOptions = DEFAULT_DECK_STUDY_OPTIONS
+    ): Promise<Card> => {
       const ownerId = requireUserId();
       const card = cards.find((item) => item.id === cardId);
       if (!card) {
@@ -234,8 +262,13 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const now = Date.now();
-      const reviewUpdate = scheduleReview(card, rating, now);
+      const reviewUpdate = scheduleReview(card, rating, now, options);
       const reviewEventId = id();
+      const updatedCard: Card = {
+        ...card,
+        ...reviewUpdate,
+        updatedAt: now,
+      };
 
       try {
         await db.transact([
@@ -259,6 +292,8 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
         setMutationError(err instanceof Error ? err.message : 'Could not save review result.');
         throw err;
       }
+
+      return updatedCard;
     },
     [cards, requireUserId]
   );
@@ -292,7 +327,7 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cards, requireUserId]);
 
-  const getCardById = useCallback((id: string) => cards.find((card) => card.id === id), [cards]);
+  const getCardById = useCallback((cardId: string) => cards.find((card) => card.id === cardId), [cards]);
 
   const value = useMemo(
     () => ({
@@ -326,6 +361,25 @@ export const CardsProvider = ({ children }: { children: ReactNode }) => {
 
 const unavailableError = 'Cards context is unavailable.';
 
+const fallbackCard = (): Card => ({
+  id: '',
+  noteId: '',
+  cardOrdinal: 0,
+  title: '',
+  frontText: '',
+  backText: '',
+  imageUris: [],
+  isSuspended: false,
+  buriedUntilDay: undefined,
+  reviewState: 'new',
+  dueAt: Date.now(),
+  learningSteps: 0,
+  reps: 0,
+  lapses: 0,
+  createdAt: 0,
+  updatedAt: 0,
+});
+
 export const useCards = () => {
   const context = useContext(CardContext);
   if (!context) {
@@ -334,25 +388,12 @@ export const useCards = () => {
       loading: false,
       error: unavailableError,
       refreshCards: async () => {},
-      addCard: async () => ({
-        id: '',
-        title: '',
-        frontText: '',
-        backText: '',
-        imageUris: [],
-        reviewState: 'new' as const,
-        dueAt: Date.now(),
-        learningSteps: 0,
-        reps: 0,
-        lapses: 0,
-        createdAt: 0,
-        updatedAt: 0,
-      }),
+      addCard: async () => fallbackCard(),
       updateCard: async () => {},
       deleteCard: async () => {},
       clearCards: async () => {},
       getCardById: () => undefined,
-      gradeCardReview: async () => {},
+      gradeCardReview: async () => fallbackCard(),
     };
   }
   return context;
